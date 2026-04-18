@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>五華國小｜時光膠卷 V2</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500&family=Noto+Serif+TC:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* ==========================================
+           CSS 變數與基礎設定
+           ========================================== */
+        :root {
+            --bg-color: #0c0c0c;
+            --text-color: #e0e0e0;
+            --gold: #d4af37;
+            --font-title: 'Noto Serif TC', serif;
+            --font-body: 'Noto Sans TC', sans-serif;
+            --letterbox-height: 8vh;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-body);
+            overflow-x: hidden;
+            line-height: 1.8;
+        }
+
+        /* ==========================================
+           電影特效：雜訊噪點 (Film Grain) & 黑邊 (Letterbox)
+           ========================================== */
+        .film-grain {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none;
+            z-index: 9997;
+            opacity: 0.25;
+            filter: url(#noise-filter);
+        }
+
+        .letterbox {
+            position: fixed;
+            left: 0; width: 100%; height: var(--letterbox-height);
+            background-color: #000;
+            z-index: 9998;
+        }
+        .letterbox.top { top: 0; }
+        .letterbox.bottom { bottom: 0; }
+
+        /* ==========================================
+           排版與互動動畫 (Scroll Reveal & Parallax)
+           ========================================== */
+        .reveal-up {
+            opacity: 0;
+            transform: translateY(60px);
+            transition: opacity 1.2s cubic-bezier(0.25, 1, 0.5, 1), 
+                        transform 1.2s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .reveal-up.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .delay-1 { transition-delay: 0.2s; }
+        .delay-2 { transition-delay: 0.4s; }
+
+        /* ==========================================
+           第一幕：首頁全幅區塊 (Hero Section)
+           ========================================== */
+        .hero {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .hero-bg {
+            position: absolute;
+            top: -15%; left: 0;
+            width: 100%; height: 130%; 
+            background-image: url('https://raw.githubusercontent.com/tungtung103624-png/school/main/photo1.jpg');
+            background-size: cover;
+            background-position: center;
+            z-index: 1;
+            filter: brightness(0.4) contrast(1.1);
+            will-change: transform;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            padding: 0 20px;
+        }
+
+        .hero-title {
+            font-family: var(--font-title);
+            font-size: 4.5rem;
+            color: var(--gold);
+            letter-spacing: 15px;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 20px rgba(0,0,0,0.8);
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            letter-spacing: 5px;
+            color: #fff;
+            opacity: 0.8;
+        }
+
+        /* ==========================================
+           第二~五幕：敘事章節 (Split Layout)
+           ========================================== */
+        .story-section {
+            padding: 15vh 10vw;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 5vw;
+            min-height: 80vh;
+            position: relative;
+        }
+
+        .story-section.reverse {
+            flex-direction: row-reverse;
+        }
+
+        .polaroid-wrapper {
+            flex: 1;
+            max-width: 500px;
+            perspective: 1000px;
+        }
+
+        .polaroid {
+            background-color: #f2f2f2;
+            padding: 15px 15px 60px 15px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+            position: relative;
+            will-change: transform;
+        }
+
+        .story-section .polaroid { transform: rotate(-3deg); }
+        .story-section.reverse .polaroid { transform: rotate(3deg); }
+
+        .polaroid img {
+            width: 100%;
+            height: auto;
+            display: block;
+            filter: sepia(0.2) contrast(1.1);
+        }
+
+        .text-content {
+            flex: 1;
+            max-width: 500px;
+        }
+
+        .scene-label {
+            font-family: var(--font-body);
+            color: var(--gold);
+            font-size: 0.9rem;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .text-content h2 {
+            font-family: var(--font-title);
+            font-size: 2.5rem;
+            color: #fff;
+            margin-bottom: 30px;
+            letter-spacing: 3px;
+        }
+
+        .text-content p {
+            font-size: 1.1rem;
+            color: #b0b0b0;
+            letter-spacing: 1.5px;
+            text-align: justify;
+        }
+
+        /* ==========================================
+           頁尾與外部連結 (Footer & Links)
+           ========================================== */
+        footer {
+            padding: 80px 20px calc(var(--letterbox-height) + 40px) 20px;
+            text-align: center;
+            background: linear-gradient(to top, #000, transparent);
+        }
+
+        .footer-nav {
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .footer-nav-link {
+            text-decoration: none;
+            color: var(--gold);
+            font-family: var(--font-title);
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            padding: 10px 25px;
+            transition: all 0.4s ease;
+            background: rgba(0,0,0,0.3);
+        }
+
+        .footer-nav-link:hover {
+            background: var(--gold);
+            color: #000;
+            box-shadow: 0 0 15px var(--gold);
+        }
+
+        footer p {
+            font-family: var(--font-title);
+            color: #555;
+            letter-spacing: 2px;
+            font-size: 0.9rem;
+            margin-top: 20px;
+        }
+
+        /* ==========================================
+           響應式設計 (RWD)
+           ========================================== */
+        @media (max-width: 768px) {
+            .story-section, .story-section.reverse {
+                flex-direction: column;
+                padding: 10vh 5vw;
+                text-align: center;
+                gap: 40px;
+            }
+            .polaroid-wrapper { max-width: 100%; width: 90%; }
+            .story-section .polaroid, .story-section.reverse .polaroid { transform: rotate(0deg); }
+            .text-content { max-width: 100%; }
+            .hero-title { font-size: 2.8rem; letter-spacing: 5px; }
+            .footer-nav { gap: 15px; }
+            .footer-nav-link { font-size: 0.9rem; width: 100%; max-width: 250px; }
+        }
+    </style>
+</head>
+<body>
+
+    <svg style="display: none;">
+        <filter id="noise-filter">
+            <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="3" stitchTiles="stitch"/>
+        </filter>
+    </svg>
+
+    <div class="letterbox top"></div>
+    <div class="letterbox bottom"></div>
+    <div class="film-grain"></div>
+
+    <header class="hero">
+        <div class="hero-bg js-parallax" data-speed="0.4"></div>
+        <div class="hero-content reveal-up">
+            <h1 class="hero-title">五華國小</h1>
+            <p class="hero-subtitle">歲月長河裡的純真停格</p>
+        </div>
+    </header>
+
+    <section class="story-section">
+        <div class="polaroid-wrapper reveal-up delay-1">
+            <div class="polaroid js-parallax-element" data-speed="0.05">
+                <img src="https://raw.githubusercontent.com/tungtung103624-png/school/main/photo2.jpg" alt="晨曦中的校園">
+            </div>
+        </div>
+        <div class="text-content reveal-up delay-2">
+            <span class="scene-label">SCENE I</span>
+            <h2>晨曦中的紅磚序曲</h2>
+            <p>當第一道陽光劃破三重的天際線，五華國小的紅磚牆便被鍍上了一層溫暖的電影感。這裡不只是學校，而是每一位孩子人生劇本的開端。鐘聲是場記板的清脆聲響，宣告著每一天充滿未知的精彩戲碼，正悄悄拉開帷幕。</p>
+        </div>
+    </section>
+
+    <section class="story-section reverse">
+        <div class="polaroid-wrapper reveal-up delay-1">
+            <div class="polaroid js-parallax-element" data-speed="0.05">
+                <img src="https://raw.githubusercontent.com/tungtung103624-png/school/main/photo3.jpg" alt="課堂與知識">
+            </div>
+        </div>
+        <div class="text-content reveal-up delay-2">
+            <span class="scene-label">SCENE II</span>
+            <h2>知識微光的蒙太奇</h2>
+            <p>在黑板與粉筆的交錯間，世界在眼中無限放大。老師的諄諄教誨，如同暗房中珍貴的顯影劑。那些曾經青澀的夢想、解不開的習題，都在時光的反覆沖洗下逐漸清晰、定影，成為我們記憶中最深刻的畫面。</p>
+        </div>
+    </section>
+
+    <section class="story-section">
+        <div class="polaroid-wrapper reveal-up delay-1">
+            <div class="polaroid js-parallax-element" data-speed="0.05">
+                <img src="https://raw.githubusercontent.com/tungtung103624-png/school/main/photo4.jpg" alt="校園陪伴">
+            </div>
+        </div>
+        <div class="text-content reveal-up delay-2">
+            <span class="scene-label">SCENE III</span>
+            <h2>青春不NG的長鏡頭</h2>
+            <p>操場上的恣意奔跑、教室裡毫無保留的笑聲，我們用純真譜寫出最動人的長鏡頭。在這裡，沒有NG的片段，每一次跌倒與爬起，都是這座溫暖片場裡最珍貴的底片，記錄著友誼與成長的軌跡。</p>
+        </div>
+    </section>
+
+    <section class="story-section reverse">
+        <div class="polaroid-wrapper reveal-up delay-1">
+            <div class="polaroid js-parallax-element" data-speed="0.05">
+                <img src="https://raw.githubusercontent.com/tungtung103624-png/school/main/photo5.jpg" alt="迎向未來">
+            </div>
+        </div>
+        <div class="text-content reveal-up delay-2">
+            <span class="scene-label">FINAL SCENE</span>
+            <h2>未來的專屬放映室</h2>
+            <p>畢業從來不是劇終，而是下一部史詩電影的序章。五華國小給予我們的，不僅是知識的行囊，更是面對未來的底氣。當我們步出這座充滿膠卷氣息的校園，我們已準備好，去放映屬於自己的璀璨人生。</p>
+        </div>
+    </section>
+
+    <footer class="reveal-up">
+        <nav class="footer-nav">
+            <a href="https://www.whes.ntpc.edu.tw/" target="_blank" class="footer-nav-link">五華國小官方網站</a>
+            <a href="https://www.facebook.com/groups/793026351191510/" target="_blank" class="footer-nav-link">Facebook 粉絲專頁</a>
+        </nav>
+        
+        <p>翊華程式設計 | 網頁與作品及製作</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // 1. Scroll Reveal 動畫
+            const revealElements = document.querySelectorAll('.reveal-up');
+            const revealObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.15 });
+
+            revealElements.forEach(el => revealObserver.observe(el));
+
+            // 2. 視差滾動效果 (Parallax)
+            const heroBg = document.querySelector('.hero-bg');
+            const parallaxElements = document.querySelectorAll('.js-parallax-element');
+
+            window.addEventListener('scroll', () => {
+                let scrollY = window.pageYOffset;
+                
+                if (heroBg) {
+                    let speed = 0.4;
+                    heroBg.style.transform = `translateY(${scrollY * speed}px)`;
+                }
+
+                parallaxElements.forEach(el => {
+                    if(window.innerWidth > 768) {
+                        let speed = 0.05;
+                        let rect = el.getBoundingClientRect();
+                        let elementCenter = rect.top + rect.height / 2;
+                        let windowCenter = window.innerHeight / 2;
+                        let diff = windowCenter - elementCenter;
+                        el.style.transform = `translateY(${diff * speed}px)`;
+                    } else {
+                        el.style.transform = `none`;
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
